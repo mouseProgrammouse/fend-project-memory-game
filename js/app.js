@@ -20,7 +20,9 @@ let game = {
   //count of stars
   currentStarsRating: 0,
   //start time
-  startTime: 0
+  startTime: 0,
+  //timer
+  timer: {}
 };
 
 const moveCounter = document.querySelector('.moves');
@@ -30,9 +32,10 @@ const gameBoard = document.querySelector('.game-panel');
 const popupWindow = document.querySelector('.popup-window');
 const popupClose = document.querySelector('.popup-close');
 const newGameButton = document.querySelector('#new-game');
+const timerPanel = document.querySelector('.timer');
 
 //Start a new game
-function newGame(game, gameBoard, moveCounter, starsPanel) {
+function newGame(game, gameBoard, moveCounter, starsPanel, timerPanel) {
   //reset stars
   game.currentStarsRating = 3;
   updateStarCounter(game.currentStarsRating, game.maximumStarsRating, starsPanel);
@@ -52,8 +55,12 @@ function newGame(game, gameBoard, moveCounter, starsPanel) {
   }
   gameBoard.appendChild(board);
   gameBoard.addEventListener('click', mainLogic);
-  //set timer
-  game.startTime = performance.now();
+  //set start time
+  timerPanel.innerHTML = 0;
+  game.startTime = Date.now();
+  game.timer = setInterval(function() {
+    updateTimeOnPage(game.startTime, timerPanel);
+  }, 1000);
   return game;
 }
 
@@ -212,9 +219,14 @@ function increaseStar(countStars, maximumStarsRating, starsPanel) {
 //update game score (every error increase star -0.5)
 //count of stars can'be negative
 function decreaseStar(countStars, maximumStarsRating, starsPanel) {
-  countStars = (countStars <= 0) ? 0 : countStars - 0.5;
+  countStars = (countStars <= 1) ? 1 : countStars - 0.5;
   updateStarCounter(countStars, maximumStarsRating, starsPanel);
   return countStars;
+}
+
+//show time
+function updateTimeOnPage(startTime, timerPanel) {
+  timerPanel.innerHTML = (((Date.now() - startTime) / 1000) | 0);
 }
 
 //show popup window with result
@@ -287,31 +299,28 @@ var mainLogic = function(evt) {
       game.openedCard = newCard;
     }
   }
-  //in case of loss (game's stars rating is 0)
-  if (game.currentStarsRating === 0) {
-    //remove eventListeners from board(make board not interactive)
-    gameBoard.removeEventListener('click', mainLogic);
-    //generate and show lose message
-    showPopupWindow(popupWindow, 'Game over:(', 'You lose.', game.currentStarsRating, game.moves, 0);
-  }
   //in case of win
   if (game.cards.length === game.matchedCards.length) {
     //get end time
-    const endTime = performance.now();
+    const endTime = Date.now();
+    clearInterval(game.timer);
     gameBoard.removeEventListener('click', mainLogic);
     showPopupWindow(popupWindow, 'Congratulation:)', 'You won.', game.currentStarsRating, game.moves, (endTime - game.startTime));
   }
 }
 
 //when DOM is loaded start a new game
-document.addEventListener('DOMContentLoaded', newGame(game, gameBoard, moveCounter, starsPanel));
+document.addEventListener('DOMContentLoaded', newGame(game, gameBoard, moveCounter, starsPanel, timerPanel));
 
 //if user press a restart "button"
 restart.addEventListener('click', function() {
   //if popup is open hide it
   if (!popupWindow.classList.contains('hide'))
     popupWindow.classList.add('hide');
-  game = newGame(game, gameBoard, moveCounter, starsPanel);
+  clearInterval(game.timer);
+  //set timer 0
+  timerPanel.innerHTML = 0;
+  game = newGame(game, gameBoard, moveCounter, starsPanel, timerPanel);
 });
 
 //close popup
@@ -322,7 +331,10 @@ popupClose.addEventListener('click', function() {
 //start a new game
 newGameButton.addEventListener('click', function() {
   popupWindow.classList.add('hide');
-  game = newGame(game, gameBoard, moveCounter, starsPanel);
+  clearInterval(game.timer);
+  //set timer 0
+  timerPanel.innerHTML = 0;
+  game = newGame(game, gameBoard, moveCounter, starsPanel, timerPanel);
 });
 
 //if user press an "Enter" key start a new game
@@ -331,6 +343,9 @@ document.addEventListener('keypress', function(evt) {
     //if popup is open hide it
     if (!popupWindow.classList.contains('hide'))
       popupWindow.classList.add('hide');
-    game = newGame(game, gameBoard, moveCounter, starsPanel);
+    clearInterval(game.timer);
+    //set timer 0
+    timerPanel.innerHTML = 0;
+    game = newGame(game, gameBoard, moveCounter, starsPanel, timerPanel);
   }
 });
