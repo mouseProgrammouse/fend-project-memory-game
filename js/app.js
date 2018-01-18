@@ -159,7 +159,7 @@ function matchCards(matchedCards, cardName) {
 function hideOpenedCards() {
   const cards = document.getElementsByClassName('open');
   //hide cards
-  while (cards.length != 0) {
+  while (cards.length !== 0) {
     cards[0].classList.remove('show');
     cards[0].classList.remove('open');
   }
@@ -307,7 +307,7 @@ var mainLogic = function(evt) {
     gameBoard.removeEventListener('click', mainLogic);
     showPopupWindow(popupWindow, 'Congratulation:)', 'You won.', game.currentStarsRating, game.moves, (endTime - game.startTime));
   }
-}
+};
 
 //when DOM is loaded start a new game
 document.addEventListener('DOMContentLoaded', newGame(game, gameBoard, moveCounter, starsPanel, timerPanel));
